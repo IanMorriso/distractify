@@ -1,0 +1,17 @@
+{
+    "name": "distractify",
+    "description": "Reduces performance of targeted websites",
+    "version": "0.0.0.1",
+    "manifest_version": 3,
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.github.com/*",
+                "https://*.youtube.com/*"
+            ],
+            "js": [
+                "/effects/browser-scroller.js"
+            ]
+        }
+    ]
+}
