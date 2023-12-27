@@ -10,7 +10,8 @@
                 "https://*.youtube.com/*"
             ],
             "js": [
-                "/effects/browser-scroller.js"
+                "/effects/browser-scroller.js",
+                "/effects/performance-inhibitor.js"
             ]
         }
     ]

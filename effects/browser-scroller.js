@@ -8,7 +8,6 @@
         Scolling should occur at random times
         Based on users time spent on website, scrolling should occur more frequently
         Based on users time spent on website, scrolling should incur randomized behaviour
-
 */
 
 // Gets the URL
@@ -45,7 +44,7 @@ function scroller() {
         left: scrollX,
         behaviour: "smooth",
     });
-    alert(scrollX, scrollY);
+    //alert(scrollX, scrollY);
 }
 
 function rng(num) {
