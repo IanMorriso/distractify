@@ -18,7 +18,7 @@ customStyle(`#js-custom-element {
     font-size: 60px;
     padding: 150px 0;
     color: #008dff !important;
-    background-color: #fffffff2;
+    background-color: #fffffff2; 
     position: fixed;
     bottom: 0;
     text-align: center;
@@ -35,4 +35,4 @@ function createElement(tag, attr_tag, attr_name, attr_value) {
     alert("butts");
 }
 
-createElement("div", "id", "js-custom-element", "DONT LOOK AT THIS");
+createElement("div", "id", "js-custom-element", "GO STUDY");
