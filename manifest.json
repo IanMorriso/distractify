@@ -10,8 +10,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*.github.com/*",
-                "https://*.youtube.com/*"
+                "https://*.google.com/*"  
             ],
             "js": [
                 "/effects/browser-scroller.js",
