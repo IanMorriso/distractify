@@ -15,8 +15,8 @@
             ],
             "js": [
                 "/effects/browser-scroller.js",
-                "/effects/performance-inhibitor.js",
-                "/effects/obscurify.js"
+                "/effects/load-blocker/performance-inhibitor.js",
+                "/effects/obscurify/obscurify.js"
             ]
         }
     ],
