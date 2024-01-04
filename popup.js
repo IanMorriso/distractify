@@ -54,24 +54,49 @@ document.addEventListener("DOMContentLoaded", function(){
         toggleContainer.innerHTML = `
         <span>${effect.name}</span>
         <label class="switch">
-            <input type="checkbox" id="item-${effect.id}">
+            <input class="toggle" type="checkbox" id="item-${effect.name}">
             <span class="slider round"></span>
         </label>
         `;
         itemsContainer.appendChild(toggleContainer);
     });
 
+
     // Master-Toggle control
     let debounceTimeout;    // Needed as event listener triggered twice on a single click
-    document.getElementById("master-toggle").addEventListener("click", function (event) { 
+    const masterToggle = document.getElementById("master-toggle");
+    masterToggle.addEventListener("click", function (event) { 
+        console.log(masterToggle.checked);
         event.stopPropagation();
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(function() {
             const toggles = document.querySelectorAll("[id^='item-']");
             toggles.forEach(toggle => {
-                toggle.checked = !toggle.checked;
+                const changeEvent = new Event("change", { bubbles: true });
+                if (masterToggle.checked && !toggle.checked) {
+                    toggle.checked = true;
+                    toggle.dispatchEvent(changeEvent);      // Manual triggering of event change due to setTimeout interferance
+                } else if (!masterToggle.checked && toggle.checked) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(changeEvent);      // Manual triggering of event change due to setTimeout interferance
+                };              
             });
         }, 200);
     });
+
+    //const toggles = document.querySelectorAll("[class='container-effects']");
+    const toggles = document.querySelectorAll("[id^='item-']");
+    toggles.forEach(function(toggle) {
+        toggle.addEventListener("change", function() {
+            if (toggle.checked) {
+                console.log(`${toggle.id} is checked`);
+            } else {
+                // Checkbox is unchecked
+                console.log(`${toggle.id} is unchecked`);
+            }
+            });
+    });
+
+    
 });
 
