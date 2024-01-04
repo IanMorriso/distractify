@@ -36,6 +36,31 @@ document.addEventListener("DOMContentLoaded", function(){
         addItemToList();
     });
 
+    
+    // temp list of effects
+    const effects = [
+        { id: 1, name: "Obscure"},
+        { id: 2, name: "Word-Scramble"},
+        { id: 3, name: "Load-Blocker"},
+        { id: 4, name: "Scroller"},
+        { id: 5, name: "Bouncing Ball"},
+    ];
+    const itemsContainer = document.getElementById("container-items");
+
+    effects.forEach(effect => {
+        const toggleContainer = document.createElement("div");
+        toggleContainer.classList.add("container-effects");
+        toggleContainer.innerHTML = `
+        <span>${effect.name}</span>
+        <label class="switch">
+            <input type="checkbox" id="item-${effect.id}">
+            <span class="slider round"></span>
+        </label>
+    `;
+    itemsContainer.appendChild(toggleContainer);
+    })
+    
+
 
 
 });
