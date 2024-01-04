@@ -56,12 +56,22 @@ document.addEventListener("DOMContentLoaded", function(){
             <input type="checkbox" id="item-${effect.id}">
             <span class="slider round"></span>
         </label>
-    `;
-    itemsContainer.appendChild(toggleContainer);
-    })
-    
+        `;
+        itemsContainer.appendChild(toggleContainer);
+    });
 
-
-
+    let debounceTimeout;
+    document.getElementById("master-toggle").addEventListener("click", function (event) { 
+        console.log("cl;ick event");
+        event.stopPropagation();
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(function() {
+            console.log("master-toggle has been ToGgLeD");
+            const toggles = document.querySelectorAll("[id^='item-']");
+            toggles.forEach(toggle => {
+                toggle.checked = !toggle.checked;
+            });
+        }, 200);
+    });
 });
 

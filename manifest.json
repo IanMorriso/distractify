@@ -10,7 +10,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*.google.com/*"  
+                "https://*.wiki.com/*"  
             ],
             "js": [
                 "/effects/browser-scroller.js",
