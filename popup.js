@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function(){
             console.log("Retrieved blacklistURLS:", blacklistURLS);
             blacklistURLS.push(new_item);
 
-            // Prints each URL to terminal for easy debugging
+            // Prints each URL to terminal
             blacklistURLS.forEach(function(url) {console.log(url)});
         
             // Saves the user-defined URLs to storage
@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", function(){
     ];
     const itemsContainer = document.getElementById("container-items");
 
+    // Creates a new div with a toggle switch for each effect
     effects.forEach(effect => {
         const toggleContainer = document.createElement("div");
         toggleContainer.classList.add("container-effects");
@@ -60,13 +61,12 @@ document.addEventListener("DOMContentLoaded", function(){
         itemsContainer.appendChild(toggleContainer);
     });
 
-    let debounceTimeout;
+    // Master-Toggle control
+    let debounceTimeout;    // Needed as event listener triggered twice on a single click
     document.getElementById("master-toggle").addEventListener("click", function (event) { 
-        console.log("cl;ick event");
         event.stopPropagation();
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(function() {
-            console.log("master-toggle has been ToGgLeD");
             const toggles = document.querySelectorAll("[id^='item-']");
             toggles.forEach(toggle => {
                 toggle.checked = !toggle.checked;
