@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     scriptToggles.forEach(script => {
         if (script.checked) {
-
+            // Load script
         }
     });
 
