@@ -3,21 +3,22 @@
     "description": "Reduces performance of targeted websites",
     "version": "0.0.0.1",
     "manifest_version": 3,
-    "permissions": ["storage", "activeTab"],
+    "permissions": [
+        "storage", 
+        "activeTab", 
+        "webNavigation",
+        "scripting"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+      ],
     "action": {
         "default_popup": "popup.html"
     },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*.wikipedia.org/*"  
-            ],
-            "js": [
-                "/effects/browser-scroller.js",
-                "/effects/load-blocker/performance-inhibitor.js",
-                "/effects/obscurify/obscurify.js"
-            ]
-        }
-    ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
     "options_page": "options/options.html"
 }
