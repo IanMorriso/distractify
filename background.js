@@ -42,7 +42,7 @@ chrome.webNavigation.onCompleted.addListener((details) => {
             if (details.tabId) {
                 chrome.scripting.executeScript({
                     target: { tabId: details.tabId },
-                    files: ["effects/obscurify/obscurify.js"]
+                    files: ["effects/bouncingBall/bouncingBall.js"]
                 })
             }
         }

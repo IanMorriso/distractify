@@ -1,4 +1,39 @@
-const canvas = document.getElementById("canvas")
+// Add Custom CSS - Function
+const customStyle = css => document.head.appendChild(document.createElement("style")).innerHTML = css
+
+// Style for the div block
+customStyle(`
+#canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999;
+}
+
+.ball {
+    position: absolute;
+    height: 50px;
+    width: 50px;
+    background-color: red;
+    border-radius: 50%;
+    opacity: 0; /* Start fully transparent */
+    animation: fadeIn 2s forwards; /* Use forwards to keep the element visible after the animation ends */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 0.5; }
+}
+`);
+
+const body = document.getElementsByTagName("body")[0]
+const canvas = document.createElement("div")
+canvas.setAttribute("id", "canvas")
+body.appendChild(canvas)
+
+
 var balls = []
 
 let start
