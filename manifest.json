@@ -3,14 +3,15 @@
     "description": "Reduces performance of targeted websites",
     "version": "0.0.0.1",
     "manifest_version": 3,
+    "minimum_chrome_version": "102",
+    "omnibox": {
+        "keyword": "api"
+    },
     "permissions": ["storage", "activeTab", "webNavigation", "scripting"],
     "action": {
         "default_popup": "popup.html"
     },
-    "background": {
-        "service_worker": "service-worker.js",
-        "type": "module"
-    },
+
     "content_scripts": [
         {
             "matches": [
