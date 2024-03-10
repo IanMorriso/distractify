@@ -1,70 +1,141 @@
-const canvas = document.getElementById("canvas")
-var balls = []
-
-let start
-let previousTimeStamp = document.timeline.currentTime
-let done = false
-let newBall = true
-
-function Ball() {
-    this.element = document.createElement("div")
-    this.element.className = "ball"
-    this.element.style.height = "100px"
-    this.element.style.width = "100px"
-    this.element.style.opacity = "50%"
-    // set up the initial position for the ball
-    this.x = Math.max(1, Math.min(Math.random() * canvas.clientWidth, canvas.clientWidth - parseInt(this.element.style.width, 10) - 1))
-    this.y = Math.max(1, Math.min(Math.random() * canvas.clientHeight, canvas.clientHeight - parseInt(this.element.style.height, 10) - 1))
-    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`
-    
-    // set up the start vector for the ball
-    this.x_v = Math.random() * 0.2 * Math.pow(-1, Math.round(Math.random()))
-    this.y_v = Math.random() * 0.2 * Math.pow(-1, Math.round(Math.random()))
+function clamp(number, min, max) {
+    return Math.min(Math.max(number, min), max)
 }
 
-function step(timeStamp) {
-    if (start === undefined) {
-        start = timeStamp
+/**
+ * Allows us to inject styles into the page as necessary for effects
+ */
+class StyleManager {
+    /**
+     * 
+     * @param {string} css - the css values to inject
+     */
+    static injectStyle(css) {
+        const style = document.createElement('style')
+        document.head.append(style)
+        style.innerHTML = css
     }
-    const elapsed = timeStamp - start
-    const deltaTime = timeStamp - previousTimeStamp
+}
 
-    if (previousTimeStamp !== timeStamp) {
-        const topEdge = canvas.clientTop
-        const leftEdge = canvas.clientLeft
-        const rightEdge = canvas.clientWidth
-        const bottomEdge = canvas.clientHeight
-
-        balls.forEach(ball => {
-            ball.x = ball.x + deltaTime * ball.x_v
-            ball.y = ball.y + deltaTime * ball.y_v
-            ball.element.style.transform = `translate(${ball.x}px, ${ball.y}px)`
-            ballBound = ball.element.getBoundingClientRect()
-            if (ballBound.right >= rightEdge || ballBound.left <= leftEdge) {
-                ball.x_v = -ball.x_v
-            } else if (ballBound.bottom >= bottomEdge || ballBound.top <= topEdge) {
-                ball.y_v = -ball.y_v
-            }
-        }) 
-    }
-    const timeFactor = 2
-    if (Math.round(elapsed/1000) % timeFactor == 0 && newBall && balls.length < 100) {
-        ball = new Ball()
-        canvas.appendChild(ball.element)
-        balls.push(ball)
-        newBall = false
-    } else if (Math.round(elapsed/1000) % timeFactor != 0) {
-        newBall = true
-    } else if (Math.round(elapsed/1000) % timeFactor == 0 ) {
-        newBall = false
+/**
+ * A ball to add to the canvas
+ */
+class Ball {
+    /**
+     * 
+     * @param {HTMLObject} parent - the parent object that the ball should be inserted into
+     */
+    constructor(parent) {
+        this.parent = parent
+        this.element = document.createElement('div')
+        this.width = 100
+        this.height = 100
+        this.init()
     }
 
-    if (elapsed < 200000) {
-        previousTimeStamp = timeStamp
-        if (!done) {
-            window.requestAnimationFrame(step)
+    /**
+     * Initializes a ball with a random location and random vector for direction.
+     */
+    init() {
+        this.element.className = 'ball'
+        this.x = clamp(Math.random() * this.parent.clientWidth, this.width, this.parent.clientWidth - this.width)
+        this.y = clamp(Math.random() * this.parent.clientHeight, this.height, this.parent.clientHeight - this.height)
+        this.x_v = Math.random() * 0.2 - 0.1
+        this.y_v = Math.random() * 0.2 - 0.1
+        this.updatePosition()
+        this.parent.appendChild(this.element)
+    }
+
+    /**
+     * Sets the position for the ball. 
+     */
+    updatePosition() {
+        this.element.style.transform = `translate(${this.x}px, ${this.y}px)`
+    }
+
+    /**
+     * Updates x and y coordinates of object based on deltaTime
+     * @param {number} deltaTime - the amount of time that has passed
+     * from the last frame till now.
+     */
+    move(deltaTime) {
+        this.x += deltaTime * this.x_v
+        this.y += deltaTime * this.y_v
+        // Collision detection within the parent bounds
+        if (this.x < 0 || this.x > this.parent.clientWidth - this.height) this.x_v *= -1
+        if (this.y < 0 || this.y > this.parent.clientHeight - this.width) this.y_v *= -1
+        this.updatePosition();
+    }
+}
+
+/**
+ * Manager initiates and controls the overall animation on the page. 
+ */
+class AnimationManager {
+    constructor() {
+        this.balls = []
+        this.previousTimeStamp = 0
+        this.newBall = true
+        this.initCanvas()
+        window.requestAnimationFrame(this.step.bind(this))
+    }
+
+    /**
+     * Create canvas and set up styles.
+     */
+    initCanvas() {
+        this.canvas = document.createElement('div')
+        this.canvas.id = 'canvas'
+        document.body.appendChild(this.canvas)
+        StyleManager.injectStyle(`
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 9999;
+            pointer-events: none;
         }
+        
+        .ball {
+            position: absolute;
+            height: ${this.balls[0] === undefined ? 100 : this.balls[0].height}px;
+            width: ${this.balls[0] === undefined ? 100 : this.balls[0].width}px;
+            background-color: red;
+            border-radius: 50%;
+            opacity: 0; /* Start fully transparent */
+            animation: fadeIn 2s forwards; /* Use forwards to keep the element visible after the animation ends */
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 0.5; }
+        }
+        `)
+    }
+
+    /**
+     * The callback function for requestAnimationFrame
+     * Controls rate of balls added to screen
+     * @param {number} timeStamp - the current time
+     */
+    step(timeStamp) {
+        const deltaTime = timeStamp - this.previousTimeStamp
+        if (this.newBall && this.balls.length < 100) {
+            this.balls.push(new Ball(this.canvas))
+            this.newBall = false
+        }
+
+        this.balls.forEach(ball => ball.move(deltaTime))
+
+        if (timeStamp % 2000 < 50) this.newBall = true
+
+        this.previousTimeStamp = timeStamp
+        window.requestAnimationFrame(this.step.bind(this))
     }
 }
 
-window.requestAnimationFrame(step) // give our callback func to requsetor
+new AnimationManager()

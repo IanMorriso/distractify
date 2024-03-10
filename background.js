@@ -1,53 +1,88 @@
-// mirrors the data we get from chrome.sync for the sites
-const sites = new Set()
+// get the all of the js file pathes from the effects folders
+const effectFiles = {
+    '1': {
+        name: "Word Scramble",
+        path: "effects/wordScramble/wordScramble.js"
+    },
+    '2': {
+        name: "Bouncing Ball",
+        path: "effects/bouncingBall/bouncingBall.js"
+    },
+    '3': {
+        name: "Load Blocker",
+        path: "effects/load-blocker/load-blocker.js"
+    },
+    '4': {
+        name: "Obscurify",
+        path: "effects/obscurify/obscurify.js"
+    },
+}
 
 // adds new sites that have been added from the UI
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    // for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-    //     sites.add(newValue)
-    //     console.log(
-    //         `Storage key "${key}" in namespace "${namespace}" changed.`,
-    //         `Old value was "${oldValue}", new value is "${newValue}".`
-    //     );
-    // }
-    // console.log("hello these are the sites from storage listener: ");
+    
     sites.forEach(site => {
         console.log(site);
         sites.add(site)
     })
+
+    effects.forEach(effect => {
+        console.log(effect);
+        effects.add(effect)
+    })
   });
 
-  // adds the existing blacklisted sites to the current context
-  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+// adds the existing blacklisted sites and effects to the current context
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     getStoredData('blacklistURLS', (storedData) => {
-        // console.log("About to navigate to a website");
-        // console.log(details);
-        
         // Use your stored data here
-        // console.log("Stored data:", storedData);
-        storedData.forEach(site => {
-            sites.add(site)
-        })
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
     });
-  })
+    getStoredData('effects', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(effect => {
+                effects.add(effect)
+            })
+        }
+    });
+});
 
 // adds an effect to the matching tab if it is in the blacklisted sites
 chrome.webNavigation.onCompleted.addListener((details) => {
-    // console.log("navigated to a website")
-    // console.log(details);
-    // console.log("hello these are the sites from webNav listener: ");
-    // console.log(sites)
+    const sites = new Set()
+    sites.add('wikipedia')
+    getStoredData('blacklistURLS', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
+    });
+    const effects = new Set()
+    // effects.add({id: '1', name: 'Word Scramble'})
+    effects.add({id: '2', name: 'Bouncing Ball'})
     sites.forEach(site => {
         if (details.url.includes(site)) {
             if (details.tabId) {
-                chrome.scripting.executeScript({
-                    target: { tabId: details.tabId },
-                    files: ["effects/obscurify/obscurify.js"]
+                // loop over effects
+                effects.forEach(effect => {
+                    // check if effect is in the current effect set
+                    if (effects.has(effect)) {
+                        chrome.scripting.executeScript({
+                            target: { tabId: details.tabId },
+                            files: [effectFiles[effect.id].path]
+                        })
+                    }
                 })
             }
         }
     })
-    
 })
 
 // gets the data of the matching key
@@ -59,4 +94,32 @@ function getStoredData(key, callback) {
         }
         callback(result[key]);
     });
+}
+
+function getStoredDataAsync(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get(key, (result) => {
+            if (chrome.runtime.lastError) {
+                reject(`Error fetching data: ${chrome.runtime.lastError}`);
+            } else {
+                resolve(result[key]);
+            }
+        });
+    });
+}
+
+async function fetchData(key) {
+    try {
+        const data = await getStoredDataAsync(key);
+        // check if object is undefined
+        if (data === undefined) {
+            throw new Error('No data found');
+        }
+        
+        console.log('Data fetched successfully:', data);
+        // Process data...
+    } catch (error) {
+        console.error('Error getting stored data:', error);
+        throw new Error('catch above error');
+    }
 }
