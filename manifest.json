@@ -3,11 +3,16 @@
     "description": "Reduces performance of targeted websites",
     "version": "0.0.0.1",
     "manifest_version": 3,
-    "minimum_chrome_version": "102",
-    "omnibox": {
-        "keyword": "api"
-    },
-    "permissions": ["storage", "activeTab", "webNavigation", "scripting"],
+    "permissions": [
+        "storage", 
+        "activeTab", 
+        "webNavigation",
+        "scripting"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+      ],
     "action": {
         "default_popup": "popup.html"
     },
@@ -15,18 +20,5 @@
         "service_worker": "background.js",
         "type": "module"
     },
-
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*.wikipedia.org/*"  
-            ],
-            "js": [
-                "/effects/browser-scroller.js",
-                "/effects/load-blocker/performance-inhibitor.js",
-                "/effects/obscurify/obscurify.js"
-            ]
-        }
-    ],
     "options_page": "options/options.html"
 }
