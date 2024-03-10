@@ -11,6 +11,10 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
 
     "content_scripts": [
         {

@@ -1,7 +1,7 @@
 import Semaphore from "./semaphore.js";
-
+//import { effects } from "./effects.js";
 // After popup loads, add event listeners for form submissions
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", async function(){
 
 
     // Retrieves the user-defined URLs from storage
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function(){
     //    blacklistURLS = data.blacklistURLS || [];
     //    console.log("Retrieved blacklistURLS:", blacklistURLS);
     //});
-
+    //chrome.storage.sync.clear();
 
     function addItemToList() {
         var new_item = document.getElementById("newItem").value;
@@ -49,14 +49,58 @@ document.addEventListener("DOMContentLoaded", function(){
     
     // temp list of effects
     const effects = [
-        { id: 1, name: "Obscure", active: false},
-        { id: 2, name: "Word Scramble", active: false},
-        { id: 3, name: "Load Blocker", active: false},
-        { id: 4, name: "Scroller", active: false},
-        { id: 5, name: "Bouncing Ball", active: false},
+        { id: 0, name: "Obscure", active: false},
+        { id: 1, name: "Word Scramble", active: false},
+        { id: 2, name: "Load Blocker", active: false},
+        { id: 3, name: "Scroller", active: false},
+        { id: 4, name: "Bouncing Ball", active: false},
     ];
-    const itemsContainer = document.getElementById("container-items");
+    
+/*
+    let other = Object.keys(effects);    
 
+    let checked = new Set(other);
+
+    
+
+    for (let [key, value] of Object.entries(effects)) {
+        let checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = checked.has(key);
+        checkbox.name = key;
+        checkbox.addEventListener('click', (event) => {
+          handleCheckboxClick(event).catch(console.error)
+        })
+    
+        let span = document.createElement('span');
+        span.textContent = value;
+    
+        let div = document.createElement('div');
+        div.appendChild(checkbox);
+        div.appendChild(span);
+    
+        itemsContainer.appendChild(div);
+    }
+  
+
+    
+    async function handleCheckboxClick(event) {
+        let checkbox = event.target;
+        let key = checkbox.key;
+        let enabled = checkbox.checked;
+      
+        let { activeEffects = Object.keys(effects) } = await chrome.storage.sync.get('activeEffects');
+        let effectSet = new Set(activeEffects);
+        console.log(effectSet);
+        
+        if (enabled) effectSet.add(key)
+        else effectSet.delete(key);
+        
+        await chrome.storage.sync.set({ activeEffects: [...effectSet] })
+    }
+    */
+
+    const itemsContainer = document.getElementById("container-items");
     // Creates a new div with a toggle switch for each effect
     effects.forEach(effect => {
         const toggleContainer = document.createElement("div");
@@ -64,14 +108,15 @@ document.addEventListener("DOMContentLoaded", function(){
         toggleContainer.innerHTML = `
         <span>${effect.name}</span>
         <label class="switch">
-            <input class="toggle" type="checkbox" id="item-${effect.name}">
+            <input class="toggle" type="checkbox" id="item-${effect.id}">
             <span class="slider round"></span>
         </label>
         `;
         itemsContainer.appendChild(toggleContainer);
     });
+    
 
-
+    chrome.storage.sync.set({ effects: effects});
     // Master-Toggle control
     let debounceTimeout;    // Needed as event listener triggered twice on a single click
     //const debouncedMasterToggleHandler = debounce(masterToggleHandler, 200);
@@ -116,21 +161,23 @@ document.addEventListener("DOMContentLoaded", function(){
     chrome.storage.sync.get(null, function(items) {
         console.log(items);
     });
+    let activeEffects = new Set();
     const sem = new Semaphore(1);
     const toggles = document.querySelectorAll("[id^='item-']");
-    toggles.forEach(function(toggle) {
+    toggles.forEach(async function(toggle) {
         toggle.addEventListener("change", async function() {
             if (toggle.checked) {
                 console.log(`${toggle.id} is checked`);
+                activeEffects.add(effects[toggle.id]);
 
             } else {
                 // Checkbox is unchecked
                 console.log(`${toggle.id} is unchecked`);
+                activeEffects.delete(effects[toggle.id]);
             }
 
-            await chrome.storage.sync.get('tests', function(result) {
-                checkAndSetToggles('tests', result, toggle);
-            });
+    await chrome.storage.sync.set({activeEffects: [...activeEffects]});
+  
             /*
             await chrome.storage.sync.get('tests', async function(result) {
                 if ('tests' in result && result.tests !== undefined) {
@@ -149,20 +196,31 @@ document.addEventListener("DOMContentLoaded", function(){
         });
 
     });
+})
+
+
 
     chrome.runtime.sendMessage({ contentScriptLoaded: true });   
-});
+
+async function handleToggleClick(event) {
+    let toggle = event.target;
+    let effect = toggle.id;
+    let enabled = toggle.checked;
+
+    
+}
 
 async function checkAndSetToggles(tests, result, toggle) {
-    if ('tests' in result && result.tests !== undefined) {
+    if ('effects' in result && result.tests !== undefined) {
         var retrievedObjs = JSON.parse(result.tests);
         var objtoedit = retrievedObjs.find(o => o.name == toggle.id.split('-')[1]);
         objtoedit.active = toggle.checked;
         await console.log(retrievedObjs);
-        await chrome.storage.sync.set({'tests':JSON.stringify(retrievedObjs)}, function() {
+        await chrome.storage.sync.set({'effects':JSON.stringify(retrievedObjs)}, function() {
             console.log("ya did it");
         });
     } else {
         console.log(" 'tests' not found in chrome.storage.sync");
     }
 }
+
