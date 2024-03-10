@@ -1,3 +1,7 @@
+function clamp(number, min, max) {
+    return Math.min(Math.max(number, min), max)
+}
+
 /**
  * Allows us to inject styles into the page as necessary for effects
  */
@@ -24,6 +28,8 @@ class Ball {
     constructor(parent) {
         this.parent = parent
         this.element = document.createElement('div')
+        this.width = 100
+        this.height = 100
         this.init()
     }
 
@@ -32,8 +38,8 @@ class Ball {
      */
     init() {
         this.element.className = 'ball'
-        this.x = Math.random() * (this.parent.clientWidth - 100)
-        this.y = Math.random() * (this.parent.clientHeight - 100)
+        this.x = clamp(Math.random() * this.parent.clientWidth, this.width, this.parent.clientWidth - this.width)
+        this.y = clamp(Math.random() * this.parent.clientHeight, this.height, this.parent.clientHeight - this.height)
         this.x_v = Math.random() * 0.2 - 0.1
         this.y_v = Math.random() * 0.2 - 0.1
         this.updatePosition()
@@ -56,8 +62,8 @@ class Ball {
         this.x += deltaTime * this.x_v
         this.y += deltaTime * this.y_v
         // Collision detection within the parent bounds
-        if (this.x < 0 || this.x > this.parent.clientWidth - 100) this.x_v *= -1
-        if (this.y < 0 || this.y > this.parent.clientHeight - 100) this.y_v *= -1
+        if (this.x < 0 || this.x > this.parent.clientWidth - this.height) this.x_v *= -1
+        if (this.y < 0 || this.y > this.parent.clientHeight - this.width) this.y_v *= -1
         this.updatePosition();
     }
 }
@@ -83,18 +89,21 @@ class AnimationManager {
         document.body.appendChild(this.canvas)
         StyleManager.injectStyle(`
         #canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
+            bottom: 0;
+            right: 0;
             height: 100%;
             width: 100%;
             z-index: 9999;
+            pointer-events: none;
         }
         
         .ball {
             position: absolute;
-            height: 100px;
-            width: 100px;
+            height: ${this.balls[0] === undefined ? 100 : this.balls[0].height}px;
+            width: ${this.balls[0] === undefined ? 100 : this.balls[0].width}px;
             background-color: red;
             border-radius: 50%;
             opacity: 0; /* Start fully transparent */

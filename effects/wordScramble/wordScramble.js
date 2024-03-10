@@ -1,110 +1,82 @@
-const noEffectTags = ["script", "style"]
-    const body = document.getElementsByTagName("body").item(0).childNodes
-    let randomProportion = 0.1
+class TextShuffer {
+    constructor() {
+        this.noEffectTags = ["SCRIPT", "STYLE"]
+        this.randomProportion = 0.1
+        this.randomProportionDelta = 0.05
+        this.textNodes = this.getTextNodes()
+        this.start = undefined
+        this.previousTimeStamp = 0
+        this.modifyText = true
+    }
 
-    let start
-    let previousTimeStamp = document.timeline.currentTime
-    let done = false
-    let modifyText = true
+    run() {
+        window.requestAnimationFrame(this.step.bind(this))
+    }
 
-    const tNodes = getTextNodes()
-
-    window.requestAnimationFrame(step)
-
-    function step(timeStamp) {
-        if (start === undefined) {
-            start = timeStamp
+    step(timeStamp) {
+        if (this.start === undefined) {
+            this.start = timeStamp
         }
-        const elapsed = timeStamp - start
-        const deltaTime = timeStamp - previousTimeStamp
+        const elapsed = timeStamp - this.start
 
-        if (previousTimeStamp !== timeStamp) {
-
-        }
-        const timeFactor = 2
-        if (Math.round(elapsed/1000) % timeFactor == 0 && modifyText) {
-            randomProportion = randomProportion + 0.1
-            tNodes.forEach(node => {
-                changeText(node)
-            })
-            modifyText = false
-        } else if (Math.round(elapsed/1000) % timeFactor != 0) {
-            modifyText = true
-        } else if (Math.round(elapsed/1000) % timeFactor == 0 ) {
-            modifyText = false
+        if (elapsed / 1000 % 2 === 0 && this.modifyText) {
+            this.randomProportion += this.randomProportionDelta
+            this.textNodes.forEach(node => this.changeText(node))
+            this.modifyText = false
+        } else if (elapsed / 1000 % 2 !== 0 ){
+            this.modifyText = true
         }
 
         if (elapsed < 200000) {
-            previousTimeStamp = timeStamp
-            if (!done) {
-                window.requestAnimationFrame(step)
-            }
+            this.previousTimeStamp = timeStamp
+            window.requestAnimationFrame(this.step.bind(this))
         }
     }
-    function changeText(node) {
-        let new_words = []
-        
-        text = node.nodeValue
 
-        if (text === undefined) {
-            return
-        }
+    changeText(node) {
+        if (!node.nodeValue) return
 
-        textNodes = text.split(" ")
-
-        // shuffle letters of the words
-        textNodes.forEach(word => {
-            if (Math.random() > randomProportion) {
-                new_words.push(word)
-                return
-            }
-            if (word.length < 4) {
-                new_words.push(word)
-                return
-            }
-            subWord = word.slice(1, length - 1)
-            newWord = word[0] + shuffle(subWord) + word[word.length - 1]
-            new_words.push(newWord)
+        const words = node.nodeValue.split(" ")
+        const newWords = words.map(word => {
+            if(Math.random() > this.randomProportion || word.length < 4) return word
+            
+            const middle = word.slice(1, -1)
+            return word[0] + this.shuffle(middle) + word[word.length - 1]
         })
-        node.nodeValue = new_words.join(" ")
+
+        node.nodeValue = newWords.join(' ')
     }
 
-    
-
-    function shuffle(array) {
-        array = array.split("")
-        var m = array.length, t, i;
-
-        // While there remain elements to shuffle…
-        while (m) {
-
-            // Pick a remaining element…
-            i = Math.floor(Math.random() * m--);
-
-            // And swap it with the current element.
-            t = array[m];
-            array[m] = array[i];
-            array[i] = t;
+    shuffle(string) {
+        const array = string.split('')
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i+1));
+            [array[i], array[j]] = [array[j], array[i]]
         }
-
-        return array.join("");
+        return array.join('')
     }
 
-    function getTextNodes() {
-        var walker = document.createTreeWalker(
-            document.body, 
-            NodeFilter.SHOW_TEXT, 
-            null, 
+    getTextNodes() {
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            { acceptNode: node => this.isShuffable(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT},
             false
-        );
+        )
 
-        var node;
-        var textNodes = [];
-
-        while(node = walker.nextNode()) {
-            console.log(`${node.parentNode.tagName}`);
-            textNodes.push(node);
+        const textNodes = []
+        let node
+        while (node = walker.nextNode()) {
+            textNodes.push(node)
         }
 
         return textNodes
     }
+
+    isShuffable(node) {
+        return !this.noEffectTags.includes(node.parentNode.tagName)
+    }
+}
+
+const textShuffler = new TextShuffer()
+textShuffler.run()
