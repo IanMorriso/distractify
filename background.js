@@ -20,7 +20,6 @@ const effectFiles = {
 
 // adds new sites that have been added from the UI
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    
     sites.forEach(site => {
         console.log(site);
         sites.add(site)
@@ -95,6 +94,7 @@ function getStoredData(key, callback) {
         callback(result[key]);
     });
 }
+
 
 function getStoredDataAsync(key) {
     return new Promise((resolve, reject) => {
