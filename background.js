@@ -18,43 +18,11 @@ const effectFiles = {
     },
 }
 
-// adds new sites that have been added from the UI
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    
-    sites.forEach(site => {
-        console.log(site);
-        sites.add(site)
-    })
-
-    effects.forEach(effect => {
-        console.log(effect);
-        effects.add(effect)
-    })
-  });
-
-// adds the existing blacklisted sites and effects to the current context
-chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-    getStoredData('blacklistURLS', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(site => {
-                sites.add(site)
-            })
-        }
-    });
-    getStoredData('effects', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(effect => {
-                effects.add(effect)
-            })
-        }
-    });
-});
-
 // adds an effect to the matching tab if it is in the blacklisted sites
 chrome.webNavigation.onCompleted.addListener((details) => {
+    console.log("NAVIGATED");
     const sites = new Set()
+    const effects = new Set();
     sites.add('wikipedia')
     getStoredData('blacklistURLS', (storedData) => {
         // Use your stored data here
@@ -64,26 +32,111 @@ chrome.webNavigation.onCompleted.addListener((details) => {
             })
         }
     });
-    const effects = new Set()
+    getStoredData('activeEffects', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            console.log(typeof storedData);
+            
+            storedData.forEach(effect => {
+                effects.add(effect);
+            })    
+        }
+    });
     // effects.add({id: '1', name: 'Word Scramble'})
-    effects.add({id: '2', name: 'Bouncing Ball'})
+    //effects.add({id: '2', name: 'Bouncing Ball'})
     sites.forEach(site => {
         if (details.url.includes(site)) {
             if (details.tabId) {
                 // loop over effects
                 effects.forEach(effect => {
                     // check if effect is in the current effect set
-                    if (effects.has(effect)) {
-                        chrome.scripting.executeScript({
-                            target: { tabId: details.tabId },
-                            files: [effectFiles[effect.id].path]
-                        })
-                    }
+
+                    chrome.scripting.executeScript({
+                        target: { tabId: details.tabId },
+                        files: [effectFiles[effect].path]
+                    })
                 })
             }
         }
     })
 })
+
+// adds new sites that have been added from the UI
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    console.log("STORAGE CHANGED")
+    console.log(changes);
+    const effects = new Set();
+    const sites = new Set();
+    getStoredData('blacklistURLS', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
+    });
+
+    getStoredData('activeEffects', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            console.log(typeof storedData);
+            
+            storedData.forEach(effect => {
+                effects.add(effect);
+            })    
+        }
+    });
+    sites.forEach(site => {
+        if (details.url.includes(site)) {
+            if (details.tabId) {
+                // loop over effects
+                effects.forEach(effect => {
+                    // check if effect is in the current effect set
+
+                    chrome.scripting.executeScript({
+                        target: { tabId: details.tabId },
+                        files: [effectFiles[effect].path]
+                    })
+                })
+            }
+        }
+    })
+});
+
+// adds the existing blacklisted sites and effects to the current context
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    const effects = new Set();
+    const sites = new Set();
+    getStoredData('blacklistURLS', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
+    });
+    getStoredData('activeEffects', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            console.log(typeof storedData);
+            if (typeof storedData === 'string') {
+                try {
+                    storedData = JSON.parse(storedData)
+                    storedData.forEach(effect => {
+                        effects.add(effect);
+                    })
+                } catch (error) {
+                    console.error("Error parsing JSON!: ", error);
+                    return;
+                }
+            }    
+        }
+    });
+});
+
+
+    
+
 
 // gets the data of the matching key
 function getStoredData(key, callback) {
@@ -92,9 +145,11 @@ function getStoredData(key, callback) {
             console.error(`Error fetching data: ${chrome.runtime.lastError}`);
             return;
         }
+        console.log(`Fetching data: ${result}, ${result[key]}`);
         callback(result[key]);
     });
 }
+
 
 function getStoredDataAsync(key) {
     return new Promise((resolve, reject) => {
