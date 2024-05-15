@@ -17,42 +17,9 @@ const effectFiles = {
         path: "effects/obscurify/obscurify.js"
     },
 }
-
-// adds new sites that have been added from the UI
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    sites.forEach(site => {
-        console.log(site);
-        sites.add(site)
-    })
-
-    effects.forEach(effect => {
-        console.log(effect);
-        effects.add(effect)
-    })
-  });
-
-// adds the existing blacklisted sites and effects to the current context
-chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-    getStoredData('blacklistURLS', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(site => {
-                sites.add(site)
-            })
-        }
-    });
-    getStoredData('effects', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(effect => {
-                effects.add(effect)
-            })
-        }
-    });
-});
-
 // adds an effect to the matching tab if it is in the blacklisted sites
 chrome.webNavigation.onCompleted.addListener((details) => {
+    console.log("NAVIGATED");
     const sites = new Set()
     sites.add('wikipedia')
     getStoredData('blacklistURLS', (storedData) => {
@@ -63,9 +30,8 @@ chrome.webNavigation.onCompleted.addListener((details) => {
             })
         }
     });
-    const effects = new Set()
-    // effects.add({id: '1', name: 'Word Scramble'})
-    effects.add({id: '2', name: 'Bouncing Ball'})
+        // effects.add({id: '1', name: 'Word Scramble'})
+    //effects.add({id: '2', name: 'Bouncing Ball'})
     sites.forEach(site => {
         if (details.url.includes(site)) {
             if (details.tabId) {
@@ -84,6 +50,68 @@ chrome.webNavigation.onCompleted.addListener((details) => {
     })
 })
 
+// adds new sites that have been added from the UI
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    console.log("STORAGE CHANGED")
+    console.log(changes);
+    getStoredData('blacklistURLS', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
+    });
+
+    getStoredData('activeEffects', (storedData) => {
+        console.log(typeof storedData);
+        console.log(storedData);
+        // Use your stored data here
+        if (storedData !== undefined) {
+            if (Array.isArray(storedData)) {
+                console.log(storedData);
+                storedData.forEach(effect => {
+                    effects.add(effect)
+                })
+            }
+        }
+    });
+});
+
+// adds the existing blacklisted sites and effects to the current context
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    const effects = new Set()
+    getStoredData('blacklistURLS', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            storedData.forEach(site => {
+                sites.add(site)
+            })
+        }
+    });
+    getStoredData('activeEffects', (storedData) => {
+        // Use your stored data here
+        if (storedData !== undefined) {
+            console.log(typeof storedData);
+            if (typeof storedData === 'string') {
+                try {
+                    storedData = JSON.parse(storedData)
+                    storedData.forEach(effect => {
+                        effects.add(effect);
+                    })
+                } catch (error) {
+                    console.error("Error parsing JSON!: ", error);
+                    return;
+                }
+            }    
+        }
+    });
+});
+
+
+    
+
+
 // gets the data of the matching key
 function getStoredData(key, callback) {
     chrome.storage.sync.get(key, (result) => {
@@ -91,6 +119,7 @@ function getStoredData(key, callback) {
             console.error(`Error fetching data: ${chrome.runtime.lastError}`);
             return;
         }
+        console.log(`Fetching data: ${result}, ${result[key]}`);
         callback(result[key]);
     });
 }

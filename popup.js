@@ -71,13 +71,14 @@ async function createForm() {
  * @param {*} event the event object that triggered the checkbox
  */
 async function handleCheckboxClick(event) {
+    console.log("Checkbox checked");
     const checkbox = event.target;
     const key = checkbox.name;
     const enabled = checkbox.checked;
   
     // activeEffects is set to the current list of active effects
     const { activeEffects = Object.keys(effects) } =
-      await chrome.storage.sync.get('activeEffects');
+        await chrome.storage.sync.get('activeEffects');
     const keySet = new Set(activeEffects);
     
     // keySet is updated to the new Set of active effects
