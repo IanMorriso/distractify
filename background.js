@@ -1,65 +1,67 @@
 // get the all of the js file pathes from the effects folders
+// TODO: make this and the popup.js file more modular
 const effectFiles = {
+    '0': {
+        name: "Obscurify",
+        path: "effects/obscurify/obscurify.js"
+    },
     '1': {
         name: "Word Scramble",
         path: "effects/wordScramble/wordScramble.js"
     },
     '2': {
-        name: "Bouncing Ball",
-        path: "effects/bouncingBall/bouncingBall.js"
-    },
-    '3': {
         name: "Load Blocker",
         path: "effects/load-blocker/load-blocker.js"
     },
+    '3': {
+        name: "Scroller",
+        path: "effects/scroller/scroller.js"
+    },
     '4': {
-        name: "Obscurify",
-        path: "effects/obscurify/obscurify.js"
+        name: "Bouncing Ball",
+        path: "effects/bouncingBall/bouncingBall.js"
     },
 }
 
-// adds an effect to the matching tab if it is in the blacklisted sites
-chrome.webNavigation.onCompleted.addListener((details) => {
+/** adds an effect to the matching tab if it is in the blacklisted sites
+ * @param details - callback function that is called when the navigation is completed
+ *                  Contains the tabId and the url of the page that was navigated to
+ */
+chrome.webNavigation.onCompleted.addListener(async (details) => {
     console.log("NAVIGATED");
     const sites = new Set()
     const effects = new Set();
-    sites.add('wikipedia')
-    getStoredData('blacklistURLS', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(site => {
-                sites.add(site)
-            })
-        }
-    });
-    getStoredData('activeEffects', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            console.log(typeof storedData);
-            
-            storedData.forEach(effect => {
-                effects.add(effect);
-            })    
-        }
-    });
-    // effects.add({id: '1', name: 'Word Scramble'})
-    //effects.add({id: '2', name: 'Bouncing Ball'})
-    sites.forEach(site => {
-        if (details.url.includes(site)) {
-            if (details.tabId) {
-                // loop over effects
-                effects.forEach(effect => {
-                    // check if effect is in the current effect set
 
-                    chrome.scripting.executeScript({
-                        target: { tabId: details.tabId },
-                        files: [effectFiles[effect].path]
-                    })
-                })
-            }
+    try {
+        const blacklistURLs = await getStoredDataAsync('blacklistURLS');
+        if (blacklistURLs) {
+            blacklistURLs.forEach(site => sites.add(site));
         }
-    })
-})
+
+        const activeEffects = await getStoredDataAsync('activeEffects');
+        if (activeEffects) {
+            activeEffects.forEach(effect => effects.add(effect));
+        }
+
+        sites.forEach(site => {
+            if (details.url.includes(site)) {
+                if (details.tabId) {
+                    // loop over effects
+                    effects.forEach(effect => {
+                        // check if effect is in the current effect set
+    
+                        chrome.scripting.executeScript({
+                            target: { tabId: details.tabId },
+                            files: [effectFiles[effect].path]
+                        })
+                    })
+                }
+            }
+        })
+    } catch (error) {
+        console.error('Error getting stored data:', error);
+    }
+});
 
 // adds new sites that have been added from the UI
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -103,42 +105,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     })
 });
 
-// adds the existing blacklisted sites and effects to the current context
-chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-    const effects = new Set();
-    const sites = new Set();
-    getStoredData('blacklistURLS', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            storedData.forEach(site => {
-                sites.add(site)
-            })
-        }
-    });
-    getStoredData('activeEffects', (storedData) => {
-        // Use your stored data here
-        if (storedData !== undefined) {
-            console.log(typeof storedData);
-            if (typeof storedData === 'string') {
-                try {
-                    storedData = JSON.parse(storedData)
-                    storedData.forEach(effect => {
-                        effects.add(effect);
-                    })
-                } catch (error) {
-                    console.error("Error parsing JSON!: ", error);
-                    return;
-                }
-            }    
-        }
-    });
-});
-
-
-    
-
-
-// gets the data of the matching key
+// 
+/**
+ * gets the data of the matching key
+ * @param {*} key 
+ * @param {*} callback 
+ * @deprecated
+ */
 function getStoredData(key, callback) {
     chrome.storage.sync.get(key, (result) => {
         if (chrome.runtime.lastError) {
@@ -150,7 +123,11 @@ function getStoredData(key, callback) {
     });
 }
 
-
+/**
+ * Async gets the data of the matching key
+ * @param the key to match the stored data 
+ * @returns a promise that resolves to the stored data
+ */
 function getStoredDataAsync(key) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(key, (result) => {
@@ -161,20 +138,4 @@ function getStoredDataAsync(key) {
             }
         });
     });
-}
-
-async function fetchData(key) {
-    try {
-        const data = await getStoredDataAsync(key);
-        // check if object is undefined
-        if (data === undefined) {
-            throw new Error('No data found');
-        }
-        
-        console.log('Data fetched successfully:', data);
-        // Process data...
-    } catch (error) {
-        console.error('Error getting stored data:', error);
-        throw new Error('catch above error');
-    }
 }
