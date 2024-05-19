@@ -24,13 +24,13 @@ async function createForm() {
 
     // Creates the effect form
     const form = document.getElementById('container-items');
-    for (const [key, name] of Object.entries(effects)) {
+    for (const [key, effect] of Object.entries(effects)) {
         // Each effect has its own div
         const div = document.createElement('div');
         div.className = "container-effects";
 
         const span = document.createElement('span');
-        span.textContent = name;
+        span.textContent = effect.name;
 
         const label = document.createElement('label');
         label.className = "switch";
@@ -40,7 +40,7 @@ async function createForm() {
         checkbox.checked = checked.has(key);
         checkbox.name = key;
         checkbox.className = "toggle";
-        checkbox.id = `item-${name}`;
+        checkbox.id = `item-${effect.name}`;
 
         checkbox.addEventListener('click', (event) => {
           handleCheckboxClick(event).catch(console.error);
