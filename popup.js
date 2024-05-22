@@ -1,5 +1,6 @@
 import { effects } from "./effects.js";
 
+createWebsiteContainer().catch(console.error);
 
 createForm().catch(console.error);
 
@@ -7,6 +8,30 @@ createMasterToggle().catch(console.error);
 
 createNewWebsiteListeners().catch(console.error);
 
+
+async function createWebsiteContainer() {
+    // Assuming you have an array of websites
+    //let websites = ['www.example1.com', 'www.example2.com', 'www.example3.com'];
+
+        //let websites = await getWebsites();
+    getWebsites().then(websites => {
+        console.log(websites);
+        // Select the container where you want to append the websites
+        let container = document.getElementById('container-websites');
+
+        // Loop through the websites array
+        websites.forEach(website => {
+            // Create a new paragraph element for each website
+            let p = document.createElement('p');
+            // Set the text of the paragraph to the website
+            p.textContent = website;
+            // Append the paragraph to the container
+            container.appendChild(p);
+        });
+        }).catch(error => {
+        console.error(error);
+    });
+}
 
 /**
  * Creates a form element to hold names and toggles for the extension's effects.
@@ -164,6 +189,18 @@ async function addItemToList() {
         } else {
             console.log("User-defined URLs saved successfully");
         }
+        });
+    });
+}
+
+async function getWebsites() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get("blacklistURLS", function(data) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(data.blacklistURLS || []);
+            }
         });
     });
 }
