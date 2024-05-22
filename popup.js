@@ -19,6 +19,25 @@ async function createWebsiteContainer() {
         // Clears container of stale websites
         container.innerHTML = '';
 
+        websites.forEach(website => {
+            let div = document.createElement('div');
+            let input = document.createElement('input');
+            let label = document.createElement('label');
+            let span = document.createElement('span');
+
+            input.type = 'checkbox';
+            input.id = `website-${website}`;
+            input.className = "websites";
+
+            span.textContent = website;
+
+            label.appendChild(input);
+            label.appendChild(span);
+            div.appendChild(label);
+            container.appendChild(div);
+        });
+    }).catch(console.error);
+        /**
         // Loop through the websites array
         websites.forEach(website => {
             // Create a new paragraph element for each website
@@ -30,7 +49,7 @@ async function createWebsiteContainer() {
         });
         }).catch(error => {
         console.error(error);
-    });
+        */
 }
 
 /**
