@@ -16,40 +16,34 @@ async function createWebsiteContainer() {
         // Select the container where you want to append the websites
         let container = document.getElementById('container-websites');
 
+        // Add delete button for checked websites
+
         // Clears container of stale websites
         container.innerHTML = '';
 
-        websites.forEach(website => {
+        websites.forEach((website, index) => {
             let div = document.createElement('div');
             let input = document.createElement('input');
             let label = document.createElement('label');
             let span = document.createElement('span');
+            let button = document.createElement('button');
+            // Add individual delete buttons for each website
 
             input.type = 'checkbox';
-            input.id = `website-${website}`;
+            input.id = `website-${index}`;
             input.className = "websites";
-
             span.textContent = website;
+
+            button.textContent = "Delete";
+            button.className = "delete-button";
 
             label.appendChild(input);
             label.appendChild(span);
             div.appendChild(label);
+            div.appendChild(button);
             container.appendChild(div);
         });
     }).catch(console.error);
-        /**
-        // Loop through the websites array
-        websites.forEach(website => {
-            // Create a new paragraph element for each website
-            let p = document.createElement('p');
-            // Set the text of the paragraph to the website
-            p.textContent = website;
-            // Append the paragraph to the container
-            container.appendChild(p);
-        });
-        }).catch(error => {
-        console.error(error);
-        */
 }
 
 /**
@@ -87,7 +81,7 @@ async function createForm() {
         checkbox.id = `item-${effect.name}`;
 
         checkbox.addEventListener('click', (event) => {
-          handleCheckboxClick(event).catch(console.error);
+          handleToggleClick(event).catch(console.error);
         });
 
     const sliderSpan = document.createElement('span');
@@ -114,8 +108,8 @@ async function createForm() {
  * 
  * @param {*} event the event object that triggered the checkbox
  */
-async function handleCheckboxClick(event) {
-    console.log("Checkbox checked");
+async function handleToggleClick(event) {
+    console.log("Toggle toggled");
     const checkbox = event.target;
     const key = checkbox.name;
     const enabled = checkbox.checked;
@@ -132,7 +126,9 @@ async function handleCheckboxClick(event) {
     // Store new set of active effects in chrome storage
     await chrome.storage.sync.set({ activeEffects: [...keySet] });
 }
-
+async function handleCheckboxClick(event) {
+    const checked = event.target;
+}
 
 /**
  * This function adds event listeners to the "add" buttton and "enter" key events.
@@ -185,11 +181,11 @@ async function createMasterToggle() {
 }
 
 /**
- * This funciton adds new blacklisted websites to chrome storage
+ * This function is responsible for adding a new item to the list of blacklisted websites.
  */
 async function addItemToList() {
     var new_item = document.getElementById("newItem").value;
-    let blacklistURLS;
+
     document.getElementById("newItem").value = ""; // Clears form element
     
     getWebsites().then(websites => {
@@ -200,32 +196,15 @@ async function addItemToList() {
 
         createWebsiteContainer().catch(console.error);
 
-        }).catch(error => {
+    }).catch(error => {
         console.error(error);
     });
-
-    /**
-    // Retrieves the user-defined URLs from storage
-    chrome.storage.sync.get("blacklistURLS", function(data) {
-        blacklistURLS = data.blacklistURLS || [];
-        console.log("Retrieved blacklistURLS:", blacklistURLS);
-        blacklistURLS.push(new_item);
-
-        // Prints each URL to terminal
-        blacklistURLS.forEach(function(url) {console.log(url)});
-    
-        // Saves the user-defined URLs to storage
-        chrome.storage.sync.set({ blacklistURLS: blacklistURLS }, function() {
-        if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError);
-        } else {
-            console.log("User-defined URLs saved successfully");
-        }
-        });
-    });
-    **/
 }
 
+/**
+ * 
+ * @returns {Promise} a promise that resolves to the user-defined URLs
+ */
 async function getWebsites() {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get("blacklistURLS", function(data) {
@@ -238,8 +217,11 @@ async function getWebsites() {
     });
 }
 
+/**
+ * 
+ * @param {Array[string]} blacklistURLS 
+ */
 async function saveWebsites(blacklistURLS) {
-    // Saves the user-defined URLs to storage
     chrome.storage.sync.set({ blacklistURLS: blacklistURLS }, function() {
         if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError);

@@ -116,11 +116,21 @@ input:checked + .slider:before {
     -ms-transform: translateX(220%) translateY(-50%);
     transform: translateX(220%) translateY(-50%);
 }
+
+.delete-button {
+    display: none;
+}
+
 #container-websites div {
-    display: block;
+    display: flex;
+    justify-content: space-between;
 }
 
 #container-websites div:hover {
     background-color: #ffffff;
     box-shadow: 0px 8px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+#container-websites div:hover .delete-button {
+    display: inline;
 }
