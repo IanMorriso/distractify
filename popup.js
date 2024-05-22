@@ -10,14 +10,14 @@ createNewWebsiteListeners().catch(console.error);
 
 
 async function createWebsiteContainer() {
-    // Assuming you have an array of websites
-    //let websites = ['www.example1.com', 'www.example2.com', 'www.example3.com'];
 
-        //let websites = await getWebsites();
     getWebsites().then(websites => {
         console.log(websites);
         // Select the container where you want to append the websites
         let container = document.getElementById('container-websites');
+
+        // Clears container of stale websites
+        container.innerHTML = '';
 
         // Loop through the websites array
         websites.forEach(website => {
@@ -173,6 +173,19 @@ async function addItemToList() {
     let blacklistURLS;
     document.getElementById("newItem").value = ""; // Clears form element
     
+    getWebsites().then(websites => {
+        console.log(websites);
+        
+        websites.push(new_item);
+        saveWebsites(websites);
+
+        createWebsiteContainer().catch(console.error);
+
+        }).catch(error => {
+        console.error(error);
+    });
+
+    /**
     // Retrieves the user-defined URLs from storage
     chrome.storage.sync.get("blacklistURLS", function(data) {
         blacklistURLS = data.blacklistURLS || [];
@@ -191,6 +204,7 @@ async function addItemToList() {
         }
         });
     });
+    **/
 }
 
 async function getWebsites() {
@@ -202,5 +216,16 @@ async function getWebsites() {
                 resolve(data.blacklistURLS || []);
             }
         });
+    });
+}
+
+async function saveWebsites(blacklistURLS) {
+    // Saves the user-defined URLs to storage
+    chrome.storage.sync.set({ blacklistURLS: blacklistURLS }, function() {
+        if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+        } else {
+            console.log("User-defined URLs saved successfully");
+        }
     });
 }
