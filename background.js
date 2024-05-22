@@ -1,27 +1,4 @@
-// get the all of the js file pathes from the effects folders
-// TODO: make this and the popup.js file more modular
-const effectFiles = {
-    '0': {
-        name: "Obscurify",
-        path: "effects/obscurify/obscurify.js"
-    },
-    '1': {
-        name: "Word Scramble",
-        path: "effects/wordScramble/wordScramble.js"
-    },
-    '2': {
-        name: "Load Blocker",
-        path: "effects/load-blocker/load-blocker.js"
-    },
-    '3': {
-        name: "Scroller",
-        path: "effects/scroller/scroller.js"
-    },
-    '4': {
-        name: "Bouncing Ball",
-        path: "effects/bouncingBall/bouncingBall.js"
-    },
-}
+import { effects } from "./effects.js";
 
 /** adds an effect to the matching tab if it is in the blacklisted sites
  * @param details - callback function that is called when the navigation is completed
@@ -30,7 +7,7 @@ const effectFiles = {
 chrome.webNavigation.onCompleted.addListener(async (details) => {
     console.log("NAVIGATED");
     const sites = new Set()
-    const effects = new Set();
+    const effectsToProcess = new Set();
 
     try {
         const blacklistURLs = await getStoredDataAsync('blacklistURLS');
@@ -40,19 +17,19 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 
         const activeEffects = await getStoredDataAsync('activeEffects');
         if (activeEffects) {
-            activeEffects.forEach(effect => effects.add(effect));
+            activeEffects.forEach(effect => effectsToProcess.add(effect));
         }
 
         sites.forEach(site => {
             if (details.url.includes(site)) {
                 if (details.tabId) {
                     // loop over effects
-                    effects.forEach(effect => {
+                    effectsToProcess.forEach(effect => {
                         // check if effect is in the current effect set
     
                         chrome.scripting.executeScript({
                             target: { tabId: details.tabId },
-                            files: [effectFiles[effect].path]
+                            files: [effects[effect].path]
                         })
                     })
                 }
@@ -67,7 +44,7 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("STORAGE CHANGED")
     console.log(changes);
-    const effects = new Set();
+    const effectsToProcess = new Set();
     const sites = new Set();
     getStoredData('blacklistURLS', (storedData) => {
         // Use your stored data here
@@ -84,7 +61,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
             console.log(typeof storedData);
             
             storedData.forEach(effect => {
-                effects.add(effect);
+                effectsToProcess.add(effect);
             })    
         }
     });
@@ -92,12 +69,12 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         if (details.url.includes(site)) {
             if (details.tabId) {
                 // loop over effects
-                effects.forEach(effect => {
+                effectsToProcess.forEach(effect => {
                     // check if effect is in the current effect set
 
                     chrome.scripting.executeScript({
                         target: { tabId: details.tabId },
-                        files: [effectFiles[effect].path]
+                        files: [effects[effect].path]
                     })
                 })
             }
