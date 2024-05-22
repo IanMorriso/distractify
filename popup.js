@@ -8,6 +8,27 @@ createMasterToggle().catch(console.error);
 
 createNewWebsiteListeners().catch(console.error);
 
+async function initializeMasterDelete(websites) {
+    const masterDeleteButton = document.getElementById('master-delete-button');
+
+    // When the master delete button is pressed
+    masterDeleteButton.addEventListener('click', async () => {
+        console.log("master delete pressed");
+        let websites = await getWebsites();
+        let checkboxes = document.querySelectorAll('.websites:checked');
+        let indexesToDelete = Array.from(checkboxes, checkbox => parseInt(checkbox.id.replace('website-', '')));
+        console.log(indexesToDelete);
+
+        indexesToDelete.sort((a, b) => b - a); // Sort in descending order
+        indexesToDelete.forEach(index => {
+            websites.splice(index, 1);
+        });
+
+        await saveWebsites(websites);
+        createWebsiteContainer().catch(console.error);
+    });
+}
+
 
 async function createWebsiteContainer() {
 
@@ -37,13 +58,21 @@ async function createWebsiteContainer() {
             button.textContent = "Delete";
             button.className = "delete-button";
 
+            button.addEventListener('click', async () => {
+                websites.splice(index, 1);
+                await saveWebsites(websites);
+                createWebsiteContainer().catch(console.error);
+            });
+
             label.appendChild(input);
             label.appendChild(span);
             div.appendChild(label);
             div.appendChild(button);
             container.appendChild(div);
         });
+        initializeMasterDelete(websites).catch(console.error);
     }).catch(console.error);
+    
 }
 
 /**
