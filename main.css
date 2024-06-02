@@ -100,19 +100,37 @@ input:checked + .slider:before {
 
 /* Styles for the smaller toggle switch */
 .small-switch {
-    height: 20px; /* Adjust the height as needed */
+    height: 20px;
 }
 
 .small-switch .slider {
-    height: 20px; /* Adjust the height as needed */
+    height: 20px;
 }
 
 .small-switch .slider:before {
-    height: 16px; /* Adjust the height as needed */
-    width: 16px; /* Adjust the width as needed */
+    height: 16px;
+    width: 16px;
 }
 .small-switch input:checked + .slider:before {
     -webkit-transform: translateX(220%) translateY(-50%);
     -ms-transform: translateX(220%) translateY(-50%);
     transform: translateX(220%) translateY(-50%);
+}
+
+.delete-button {
+    display: none;
+}
+
+#container-websites div {
+    display: flex;
+    justify-content: space-between;
+}
+
+#container-websites div:hover {
+    background-color: #ffffff;
+    box-shadow: 0px 8px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+#container-websites div:hover .delete-button {
+    display: inline;
 }
