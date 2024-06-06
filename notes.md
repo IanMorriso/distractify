@@ -25,4 +25,17 @@
         - ok. fixed some code and set the right key in sync storage to grab
         the data from.
 
+### Website Object Structure
+- 
+    - String:name Website URL
+    - Array[effects]:effects
+
+### Effect Object Structure
+-
+    - String:name 
+    - Boolean:active
+    - Array[params]:params
+
+    
+
     

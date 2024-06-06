@@ -1,4 +1,5 @@
 import { effects } from "./effects.js";
+import { createWebsite } from "./website-factory.js";
 
 createWebsiteContainer().catch(console.error);
 
@@ -37,8 +38,6 @@ async function createWebsiteContainer() {
         // Select the container where you want to append the websites
         let container = document.getElementById('container-websites');
 
-        // Add delete button for checked websites
-
         // Clears container of stale websites
         container.innerHTML = '';
 
@@ -53,7 +52,7 @@ async function createWebsiteContainer() {
             input.type = 'checkbox';
             input.id = `website-${index}`;
             input.className = "websites";
-            span.textContent = website;
+            span.textContent = website.name;    // Displays the name of the website
 
             button.textContent = "Delete";
             button.className = "delete-button";
@@ -214,13 +213,14 @@ async function createMasterToggle() {
  */
 async function addItemToList() {
     var new_item = document.getElementById("newItem").value;
+    var new_website = createWebsite(new_item);
 
     document.getElementById("newItem").value = ""; // Clears form element
     
     getWebsites().then(websites => {
         console.log(websites);
         
-        websites.push(new_item);
+        websites.push(new_website);
         saveWebsites(websites);
 
         createWebsiteContainer().catch(console.error);
@@ -238,6 +238,7 @@ async function getWebsites() {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get("blacklistURLS", function(data) {
             if (chrome.runtime.lastError) {
+                console.log("hit");
                 reject(chrome.runtime.lastError);
             } else {
                 resolve(data.blacklistURLS || []);
@@ -248,7 +249,7 @@ async function getWebsites() {
 
 /**
  * 
- * @param {Array[string]} blacklistURLS 
+ * @param {Array[Website]} blacklistURLS 
  */
 async function saveWebsites(blacklistURLS) {
     chrome.storage.sync.set({ blacklistURLS: blacklistURLS }, function() {
