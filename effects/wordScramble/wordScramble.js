@@ -1,5 +1,8 @@
-class TextShuffer {
-    constructor() {
+class TextShuffer extends Effect {
+    name = 'Word Scramble';
+    #options;
+    constructor(options) {
+        super()
         this.noEffectTags = ["SCRIPT", "STYLE"]
         this.randomProportion = 0.1
         this.randomProportionDelta = 0.05
@@ -7,6 +10,16 @@ class TextShuffer {
         this.start = undefined
         this.previousTimeStamp = 0
         this.modifyText = true
+        this.#options = options;
+    }
+
+    create() {
+        this.run();
+    }
+
+    destroy() {
+        this.randomProportion = 0;
+        console.log('not implemented yet. not able to cleanup entirely.');
     }
 
     run() {
@@ -78,5 +91,6 @@ class TextShuffer {
     }
 }
 
-const textShuffler = new TextShuffer()
-textShuffler.run()
+console.log('initializing Text Shuffler...');
+const textShuffler = new TextShuffer();
+textShuffler.createEffectListener();

@@ -10,7 +10,7 @@ class BouncingBallEffect extends Effect {
     }
 
     create() {
-        effect = new AnimationManager();
+        this.#effect = new AnimationManager();
     }
 
     destroy() {
@@ -182,20 +182,6 @@ class AnimationManager {
     }
 }
 
-// this manually triggers. we need to replace this with an observer pattern
-// chrome.runtime.onMessage.addListener((data) => {
-//     if ('action' in data) {
-//         if (data.action === 'start' && data.effect === 'Bouncing Ball') {
-//             effect.create();
-            
-//         } else if (data.action === 'stopEffect' && data.effect === 'Bouncing Ball') {
-//             effect.destroy();
-//         }
-//     }
-// });
-
-// effect = new BouncingBallEffect();
-// // effect.create();
 console.log('initializing Bouncing Ball...');
-const effect = new BouncingBallEffect();
-effect.createEffectListener();
+const bouncingBall = new BouncingBallEffect();
+bouncingBall.createEffectListener();
