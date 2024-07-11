@@ -1,4 +1,4 @@
-import { effects } from "./effects.js";
+import { effectsBackground as effects } from "./effects.js";
 
 /** adds an effect to the matching tab if it is in the blacklisted sites
  * @param details - callback function that is called when the navigation is completed
@@ -10,12 +10,12 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
     const effectsToProcess = new Set();
 
     try {
-        const blacklistURLs = await getStoredDataAsync('blacklistURLS');
-        if (blacklistURLs) {
-            blacklistURLs.forEach(site => sites.add(site));
+        const { blacklistURLS } = await getStoredDataAsync('blacklistURLS');
+        if (blacklistURLS) {
+            blacklistURLS.forEach(site => sites.add(site));
         }
 
-        const activeEffects = await getStoredDataAsync('activeEffects');
+        const { activeEffects } = await getStoredDataAsync('activeEffects');
         if (activeEffects) {
             activeEffects.forEach(effect => effectsToProcess.add(effect));
         }
@@ -24,14 +24,21 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
             if (details.url.includes(site)) {
                 if (details.tabId) {
                     // loop over effects
-                    effectsToProcess.forEach(effect => {
+                    effectsToProcess.forEach(async effect => {
                         // check if effect is in the current effect set
-    
-                        chrome.scripting.executeScript({
+                        const file = effects.find(e => e.name === effect).path;
+                        console.log(file);
+                        await chrome.scripting.executeScript({
                             target: { tabId: details.tabId },
-                            files: [effects[effect].path]
+                            files: [file]
                         })
-                    })
+                        const messageToScript = {
+                            action: 'start',
+                            effect: effects.find(e => e.name === effect).name
+                        };
+                        console.log("sending message to script:", messageToScript);
+                        chrome.tabs.sendMessage(details.tabId, messageToScript);
+                    });
                 }
             }
         })
@@ -46,7 +53,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log(changes);
     const effectsToProcess = new Set();
     const sites = new Set();
-    getStoredData('blacklistURLS', (storedData) => {
+    getStoredDataAsync('blacklistURLS', (storedData) => {
         // Use your stored data here
         if (storedData !== undefined) {
             storedData.forEach(site => {
@@ -55,7 +62,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         }
     });
 
-    getStoredData('activeEffects', (storedData) => {
+    getStoredDataAsync('activeEffects', (storedData) => {
         // Use your stored data here
         if (storedData !== undefined) {
             console.log(typeof storedData);
@@ -95,8 +102,8 @@ function getStoredData(key, callback) {
             console.error(`Error fetching data: ${chrome.runtime.lastError}`);
             return;
         }
-        console.log(`Fetching data: ${result}, ${result[key]}`);
-        callback(result[key]);
+        console.log(`Fetching data: ${result.toString()}`);
+        callback(result);
     });
 }
 
@@ -111,7 +118,9 @@ function getStoredDataAsync(key) {
             if (chrome.runtime.lastError) {
                 reject(`Error fetching data: ${chrome.runtime.lastError}`);
             } else {
-                resolve(result[key]);
+                console.log(`Fetching data`);
+                console.dir(result);
+                resolve(result);
             }
         });
     });
