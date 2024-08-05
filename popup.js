@@ -1,5 +1,6 @@
 import { effects } from "./effects.js";
 import { createWebsite } from "./website-factory.js";
+import { effectsBackground as effects } from "./effects.js";
 
 createWebsiteContainer().catch(console.error);
 
@@ -84,29 +85,29 @@ async function createWebsiteContainer() {
 async function createForm() {
 
     // Gets the Set of active effects from last session
-    const { activeEffects = Object.keys(effects) } =
+    const { activeEffects = effects.map(effect => effect.name) } =
         await chrome.storage.sync.get('activeEffects');
     const checked = new Set(activeEffects);
 
     // Creates the effect form
     const form = document.getElementById('container-items');
-    for (const [key, effect] of Object.entries(effects)) {
+    for (const { name } of effects) {
         // Each effect has its own div
         const div = document.createElement('div');
         div.className = "container-effects";
 
         const span = document.createElement('span');
-        span.textContent = effect.name;
+        span.textContent = name;
 
         const label = document.createElement('label');
         label.className = "switch";
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = checked.has(key);
-        checkbox.name = key;
+        checkbox.checked = checked.has(name);
+        checkbox.name = name;
         checkbox.className = "toggle";
-        checkbox.id = `item-${effect.name}`;
+        checkbox.id = `item-${name}`;
 
         checkbox.addEventListener('click', (event) => {
           handleToggleClick(event).catch(console.error);
@@ -143,7 +144,7 @@ async function handleToggleClick(event) {
     const enabled = checkbox.checked;
   
     // activeEffects is set to the current list of active effects
-    const { activeEffects = Object.keys(effects) } =
+    const { activeEffects = effects.map(effect => effect.name) } =
         await chrome.storage.sync.get('activeEffects');
     const keySet = new Set(activeEffects);
     
@@ -198,7 +199,7 @@ async function createMasterToggle() {
 
             if (masterToggle.checked) {
                 // Master toggle is active, set activeEffects to hold all effects
-                const keys = Object.keys(effects);
+                const keys = effects.map(effect => effect.name)
                 await chrome.storage.sync.set({ activeEffects: [...keys]});
             } else {
                 // Master toggle is not active, set activeEffects to empty array

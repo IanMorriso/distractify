@@ -1,3 +1,27 @@
+// import Effect from '../effect.js';
+
+class BouncingBallEffect extends Effect {
+    name = 'Bouncing Ball';
+    #effect;
+    #options;
+    constructor(options) {
+        super()
+        this.#options = options;
+    }
+
+    create() {
+        this.#effect = new AnimationManager();
+    }
+
+    destroy() {
+        effectCanvas = document.getElementById('bouncingBallEffect');
+        if (effectCanvas) {
+            effectCanvas.remove();
+        }
+        this.#effect = null;
+    }
+}
+
 function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max)
 }
@@ -85,10 +109,30 @@ class AnimationManager {
      */
     initCanvas() {
         this.canvas = document.createElement('div')
-        this.canvas.id = 'canvas'
-        document.body.appendChild(this.canvas)
+        this.canvas.id = 'bouncingBallEffect'
+        // find distractify canvas. If it exists, append to it. Otherwise, create it and append to body.
+
+        let distractifyCanvas = document.getElementById('distractifyCanvas');
+        if (!distractifyCanvas) {
+            distractifyCanvas = document.createElement('div');
+            distractifyCanvas.id = 'distractifyCanvas';
+            document.body.appendChild(distractifyCanvas);
+        }
+        distractifyCanvas.appendChild(this.canvas)
         StyleManager.injectStyle(`
-        #canvas {
+        #distractifyCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        #bouncingBallEffect {
             position: fixed;
             top: 0;
             left: 0;
@@ -138,4 +182,6 @@ class AnimationManager {
     }
 }
 
-new AnimationManager()
+console.log('initializing Bouncing Ball...');
+const bouncingBall = new BouncingBallEffect();
+bouncingBall.createEffectListener();
