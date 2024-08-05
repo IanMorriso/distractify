@@ -1,4 +1,4 @@
-import { effects } from "./effects.js";
+import { effectsBackground as effects } from "./effects.js";
 
 export function createWebsite(name) {
     return {
