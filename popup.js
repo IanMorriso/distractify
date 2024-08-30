@@ -1,6 +1,7 @@
 //import { effects } from "./effects.js";
 import { createWebsite } from "./website-factory.js";
 import { effectsBackground as effects } from "./effects.js";
+console.log("popup");
 
 createWebsiteContainer().catch(console.error);
 

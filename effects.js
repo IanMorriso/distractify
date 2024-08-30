@@ -71,8 +71,8 @@ const effects = [
         path: "effects/load-blocker/load-blocker.js"
     },
     {
-        name: "Scroller",
-        path: "effects/scroller/scroller.js"
+        name: "browserScroller",
+        path: "effects/browserScroller/browserScroller.js"
     },
     {
         name: "Bouncing Ball",

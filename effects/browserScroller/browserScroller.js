@@ -1,7 +1,7 @@
 import Effect from '../effect.js';
 
 export class BrowserScrollerEffect extends Effect {
-    name = 'Browser Scroller';
+    name = 'browserScroller';
     #effect;
     #options;
     constructor(options) {

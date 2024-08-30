@@ -1,6 +1,9 @@
 import { effectsBackground as effects } from "./effects.js";
 import {BrowserScrollerEffect} from "./effects/browserScroller/browserScroller.js"
 
+const bscroller = new BrowserScrollerEffect();
+
+console.log("background");
 
 // Resolved a messaging issue related to websites being stroed in back/forward caches.
 window.addEventListener('pageshow', function(event) {
@@ -44,11 +47,32 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
                     effectsToProcess.forEach(async effect => {
                         // check if effect is in the current effect set
                         const file = effects.find(e => e.name === effect).path;
-                        console.log(file);
+                        console.log(`Injecting script file: ${file}`);
                         const messageToScript = {
                             action: 'start',
                             effect: effects.find(e => e.name === effect).name
                         };
+                        try {
+                            await chrome.scripting.executeScript({
+                                target: { tabId: details.tabId },
+                                files: [file]
+                            });
+                    
+                            console.log("Script injected successfully. Waiting before sending message...");
+                            setTimeout(() => {
+                                chrome.tabs.sendMessage(details.tabId, messageToScript, (response) => {
+                                    if (chrome.runtime.lastError) {
+                                        console.error("Error sending message:", chrome.runtime.lastError);
+                                    } else {
+                                        console.log("Message sent successfully:", response);
+                                    }
+                                });
+                            }, 10000); // Adjust the delay as needed
+                        } catch (error) {
+                            console.error("Error injecting script:", error);
+                        }
+                    
+                        /**
                         await chrome.scripting.executeScript({
                             target: { tabId: details.tabId },
                             files: [file]
@@ -56,18 +80,19 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
                             if (chrome.runtime.lastError) {
                               console.error("Error injecting script:", chrome.runtime.lastError);
                             } else {
-                              chrome.tabs.sendMessage(details.tabId, messageToScript, (response) => {
-                                if (chrome.runtime.lastError) {
-                                  console.error("Error sending message:", chrome.runtime.lastError);
-                                } else {
-                                  console.log("Message sent successfully:", response);
-                                }
-                              });
+                                console.log("Script injected successfully. Waiting before sending message...");
+                                setTimeout(() => {
+                                    chrome.tabs.sendMessage(details.tabId, messageToScript, (response) => {
+                                        if (chrome.runtime.lastError) {
+                                            console.error("Error sending message:", chrome.runtime.lastError);
+                                        } else {
+                                            console.log("Message sent successfully:", response);
+                                        }
+                                    });
+                                }, 10000); 
                             }
                           })
-
-                        console.log("sending message to script:", messageToScript, details.tabId);
-                        chrome.tabs.sendMessage(details.tabId, messageToScript);
+                            */
                     });
                 }
             }
