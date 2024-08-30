@@ -1,4 +1,4 @@
-class Effect {
+export default class Effect {
     name;
     createEffectListener() {
         console.log(`creating effect listener for`, this.name);

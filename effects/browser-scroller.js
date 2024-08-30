@@ -44,7 +44,7 @@ function scroller() {
         left: scrollX,
         behaviour: "smooth",
     });
-    //alert(scrollX, scrollY);
+    alert(scrollX, scrollY);
 }
 
 function rng(num) {

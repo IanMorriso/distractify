@@ -24,7 +24,7 @@
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["effects/effect.js", "effects.js"]
+            "js": ["effects/effect.js", "effects/browserScroller/browserScroller.js", "effects.js"]
         }
     ]
 }

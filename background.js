@@ -1,4 +1,17 @@
 import { effectsBackground as effects } from "./effects.js";
+import {BrowserScrollerEffect} from "./effects/browserScroller/browserScroller.js"
+
+
+// Resolved a messaging issue related to websites being stroed in back/forward caches.
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+window.addEventListener('beforeunload', function() {
+    // This will ensure that the page is not cached
+});
+
 
 /** adds an effect to the matching tab if it is in the blacklisted sites
  * @param details - callback function that is called when the navigation is completed
@@ -18,25 +31,42 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
         const { activeEffects } = await getStoredDataAsync('activeEffects');
         if (activeEffects) {
             activeEffects.forEach(effect => effectsToProcess.add(effect));
+
+            console.log(activeEffects);
         }
 
         sites.forEach(site => {
-            if (details.url.includes(site)) {
+            console.log(site);
+            if (details.url.includes(site.name)) {
+                console.log("SITE IN BLACKLIST: " + site);
                 if (details.tabId) {
                     // loop over effects
                     effectsToProcess.forEach(async effect => {
                         // check if effect is in the current effect set
                         const file = effects.find(e => e.name === effect).path;
                         console.log(file);
-                        await chrome.scripting.executeScript({
-                            target: { tabId: details.tabId },
-                            files: [file]
-                        })
                         const messageToScript = {
                             action: 'start',
                             effect: effects.find(e => e.name === effect).name
                         };
-                        console.log("sending message to script:", messageToScript);
+                        await chrome.scripting.executeScript({
+                            target: { tabId: details.tabId },
+                            files: [file]
+                        }, () => {
+                            if (chrome.runtime.lastError) {
+                              console.error("Error injecting script:", chrome.runtime.lastError);
+                            } else {
+                              chrome.tabs.sendMessage(details.tabId, messageToScript, (response) => {
+                                if (chrome.runtime.lastError) {
+                                  console.error("Error sending message:", chrome.runtime.lastError);
+                                } else {
+                                  console.log("Message sent successfully:", response);
+                                }
+                              });
+                            }
+                          })
+
+                        console.log("sending message to script:", messageToScript, details.tabId);
                         chrome.tabs.sendMessage(details.tabId, messageToScript);
                     });
                 }
@@ -73,6 +103,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         }
     });
     sites.forEach(site => {
+        console.log(site);
         if (details.url.includes(site)) {
             if (details.tabId) {
                 // loop over effects

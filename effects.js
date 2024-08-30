@@ -34,8 +34,8 @@ export const effectsBackground = [
         }
     },
     {
-        name: "Scroller",
-        path: "effects/scroller/scroller.js",
+        name: "browserScroller",
+        path: "effects/browserScroller/browserScroller.js",
         active: false,
         params: {
             text: "Vote Abdul Bari for CS Wizard",
