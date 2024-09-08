@@ -14,8 +14,8 @@ export const effectsBackground = [
         path: "effects/load-blocker/load-blocker.js"
     },
     {
-        name: "Scroller",
-        path: "effects/scroller/scroller.js"
+        name: "Browser Scroller",
+        path: "effects/browserScroller/browserScroller.js"
     },
     {
         name: "Bouncing Ball",
@@ -37,8 +37,8 @@ const effects = [
         path: "effects/load-blocker/load-blocker.js"
     },
     {
-        name: "Scroller",
-        path: "effects/scroller/scroller.js"
+        name: "Browser Scroller",
+        path: "effects/browserScroller/browserScroller.js"
     },
     {
         name: "Bouncing Ball",
