@@ -10,7 +10,7 @@ createNewWebsiteListeners().catch(console.error);
 
 async function initializeMasterDelete(websites) {
     const masterDeleteButton = document.getElementById('master-delete-button');
-
+    
     // When the master delete button is pressed
     masterDeleteButton.addEventListener('click', async () => {
         console.log("master delete pressed");
