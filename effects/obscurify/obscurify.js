@@ -1,3 +1,22 @@
+class Obscurify extends Effect {
+  name = "Obscurify";
+  #options;
+  constructor(options) {
+    super();
+    this.#options = options;
+  }
+
+  create() {
+    this.run();
+  }
+
+  destroy() {
+    console.log("Destroying Obscurify");
+  }
+
+  run() {
+    
+
 // Add Custom CSS - Function
 const customStyle = css => document.head.appendChild(document.createElement("style")).innerHTML = css
 
@@ -56,4 +75,6 @@ window.onscroll = function () {
 
   // Update the previous scroll position
   prevScrollPos = currentScrollPos;
+  }
+}
 }
