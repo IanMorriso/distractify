@@ -1,13 +1,14 @@
 class Obscurify extends Effect {
   name = "Obscurify";
   #options;
+  #effect;
   constructor(options) {
     super();
     this.#options = options;
   }
 
   create() {
-    this.run();
+    this.#effect = new AnimationManager();
   }
 
   destroy() {
@@ -17,7 +18,7 @@ class Obscurify extends Effect {
   run() {
     
 
-// Add Custom CSS - Function
+/** Add Custom CSS - Function
 const customStyle = css => document.head.appendChild(document.createElement("style")).innerHTML = css
 
 // Style for the div block
@@ -75,6 +76,70 @@ window.onscroll = function () {
 
   // Update the previous scroll position
   prevScrollPos = currentScrollPos;
+  }*/
+}
+
+}
+class StyleManager {
+  /**
+   * 
+   * @param {string} css - the css values to inject
+   */
+  static injectStyle(css) {
+      const style = document.createElement('style')
+      document.head.append(style)
+      style.innerHTML = css
   }
 }
-}
+
+class AnimationManager {
+  constructor() {
+      this.balls = []
+      this.previousTimeStamp = 0
+      this.newBall = true
+      this.initCanvas()
+
+  }
+
+  /**
+   * Create canvas and set up styles.
+   */
+  initCanvas() {
+      this.canvas = document.createElement('div')
+      this.canvas.id = 'obscurifyEffect'
+      // find distractify canvas. If it exists, append to it. Otherwise, create it and append to body.
+
+      let distractifyCanvas = document.getElementById('distractifyCanvas');
+      if (!distractifyCanvas) {
+          distractifyCanvas = document.createElement('div');
+          distractifyCanvas.id = 'distractifyCanvas';
+          document.body.appendChild(distractifyCanvas);
+      }
+      distractifyCanvas.appendChild(this.canvas)
+      StyleManager.injectStyle(`
+        #obscurifyEffect {
+        font-size: 60px;
+        padding: 150px 0;
+        color: #ff0037 !important;
+        background-color: #fffffff2;
+        position: fixed;
+        top: 0;
+        text-align: center;
+        width: 100%;
+        z-index: 999999;
+        }
+
+        .obscurifyEffect {
+            font-size: 60px;
+            padding: 150px 0;
+            color: #008dff !important;
+            background-color: #fffffff2; 
+            position: fixed;
+            bottom: 0;
+            text-align: center;
+            width: 100%;
+            z-index: 999999;
+        }
+        `);
+    }
+  }
