@@ -27,7 +27,6 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
                     effectsToProcess.forEach(async effect => {
                         // check if effect is in the current effect set
                         const file = effects.find(e => e.name === effect).path;
-                        console.log(file);
                         await chrome.scripting.executeScript({
                             target: { tabId: details.tabId },
                             files: [file]
